@@ -21,9 +21,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    const scrollToBottom = () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    };
+    
+    scrollToBottom();
+    
+    // Some mobile browsers need a slight delay for keyboard expansion
+    const timers = [
+      setTimeout(scrollToBottom, 100),
+      setTimeout(scrollToBottom, 300)
+    ];
+    
+    window.addEventListener('resize', scrollToBottom);
+    return () => {
+      window.removeEventListener('resize', scrollToBottom);
+      timers.forEach(clearTimeout);
+    };
   }, [messages, isTyping]);
 
   const handleSend = async () => {
@@ -43,11 +59,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Logic for file upload
-    }
+  const handleFocus = () => {
+    // Small delay to allow the keyboard to start opening and viewport to resize
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 150);
   };
 
   return (
@@ -81,47 +99,52 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
       </div>
 
       {/* Message List */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth">
-        <AnimatePresence initial={false}>
-          {messages.map((msg, index) => (
-            <motion.div 
-              key={msg.id} 
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-              className={`flex ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[80%] rounded-2xl p-3 shadow-sm relative ${
-                msg.senderId === 'me' 
-                ? 'bg-[#dcf8c6] text-gray-800 rounded-tr-none' 
-                : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-              }`}>
-                {msg.type === 'text' ? (
-                  <p className="text-[15px] leading-relaxed break-words">{msg.text}</p>
-                ) : (
-                  <img src={msg.imageUrl} alt="shared" className="rounded-lg max-w-full" />
-                )}
-                <div className="text-[9px] text-gray-400 mt-1 text-right flex justify-end items-center gap-1">
-                  <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  {msg.senderId === 'me' && <span className="text-blue-400">✓✓</span>}
+      <div 
+        ref={scrollRef} 
+        className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth min-h-0 scrollbar-hide"
+      >
+        <div className="flex flex-col justify-end min-h-full">
+          <AnimatePresence initial={false}>
+            {messages.map((msg) => (
+              <motion.div 
+                key={msg.id} 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className={`flex mb-4 ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`max-w-[85%] rounded-2xl p-3 shadow-sm relative ${
+                  msg.senderId === 'me' 
+                  ? 'bg-[#dcf8c6] text-gray-800 rounded-tr-none' 
+                  : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+                }`}>
+                  {msg.type === 'text' ? (
+                    <p className="text-[15px] leading-relaxed break-words">{msg.text}</p>
+                  ) : (
+                    <img src={msg.imageUrl} alt="shared" className="rounded-lg max-w-full" />
+                  )}
+                  <div className="text-[9px] text-gray-400 mt-1 text-right flex justify-end items-center gap-1">
+                    <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {msg.senderId === 'me' && <span className="text-blue-400">✓✓</span>}
+                  </div>
                 </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {isTyping && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex justify-start mb-4"
+            >
+              <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex space-x-1 items-center">
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
+                <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
               </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
-        {isTyping && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex justify-start"
-          >
-            <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex space-x-1 items-center">
-              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
-              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
-              <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1.5 h-1.5 bg-gray-400 rounded-full"></motion.div>
-            </div>
-          </motion.div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Input Area */}
@@ -136,6 +159,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            onFocus={handleFocus}
             placeholder="Write a message..."
             className="w-full bg-gray-50 rounded-full py-2.5 px-5 pr-12 focus:outline-none border border-transparent focus:bg-white focus:border-blue-300 transition-all text-sm"
           />
