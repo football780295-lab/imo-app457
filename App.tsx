@@ -73,7 +73,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white max-w-md mx-auto shadow-2xl border-x border-gray-100 relative overflow-hidden">
+    <div className="flex flex-col h-[100dvh] bg-white max-w-md mx-auto shadow-2xl border-x border-gray-100 relative overflow-hidden">
       <AnimatePresence mode="wait">
         {activeCall ? (
           <motion.div 
@@ -81,7 +81,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50"
+            className="absolute inset-0 z-50 flex flex-col"
           >
             <CallOverlay profile={activeCall.profile} type={activeCall.type} onEnd={() => setActiveCall(null)} />
           </motion.div>
@@ -92,7 +92,7 @@ export default function App() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute inset-0 z-40"
+            className="absolute inset-0 z-40 flex flex-col"
           >
             <ChatWindow 
               profile={selectedProfile} 

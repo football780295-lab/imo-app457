@@ -51,7 +51,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f0f2f5]">
+    <div className="flex flex-col flex-1 h-full bg-[#f0f2f5] animate-fade-in relative overflow-hidden">
       {/* Header */}
       <div className="imo-blue text-white px-4 py-3 flex items-center justify-between shadow-md z-10">
         <div className="flex items-center">
