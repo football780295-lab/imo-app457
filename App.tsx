@@ -73,7 +73,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-white max-w-md mx-auto shadow-2xl border-x border-gray-100 relative overflow-hidden">
+    <div className="fixed inset-0 bg-white max-w-md mx-auto shadow-2xl border-x border-gray-100 flex flex-col overflow-hidden">
       <AnimatePresence mode="wait">
         {activeCall ? (
           <motion.div 

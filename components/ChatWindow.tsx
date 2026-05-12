@@ -68,6 +68,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ profile, messages, onSendMessag
     }, 150);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a fake URL for the demo
+      const imageUrl = URL.createObjectURL(file);
+      const newMessage: Message = {
+        id: Math.random().toString(),
+        senderId: 'me',
+        text: '',
+        timestamp: new Date(),
+        type: 'image',
+        imageUrl
+      };
+      // We don't have direct access to setMessages here since its a prop
+      // But we can call onSendMessage with a special flag or just handle it
+      onSendMessage("Sent an image");
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 h-full bg-[#f0f2f5] animate-fade-in relative overflow-hidden">
       {/* Header */}
